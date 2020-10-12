@@ -27,11 +27,10 @@ functionality.)
 (This is so that files that take a large amount of memory to store do not get 
 replicated, and to emphasize that an input repo should be narrow in its 
 functionality.)
-- Copy over the source directory of the input repo to the root of the output 
-repo.
-- Set permissions on the files of the copied directory to read-only. (This is 
-because the idea is for development of the input repo to be done on that repo 
-directly so that it can then be used by other repos too.)
+- Copy over the source directory of the input repo to the output repo within a 
+directory called {OUTPUT_DIR_NAME} (e.g. 'readonly'). (A name like 'readonly' 
+emphasizes that the idea is for development of the input repo to be done on 
+that repo directly so that it can then be used by other repos too.)
 
 For simplicity, this script should only use the Python standard library 
 (assuming Python 3.7 or later).
@@ -49,6 +48,13 @@ specify which is wanted for the output repo.
 Some useful discussions:
 TODO: add some useful discussion links from (e.g.) StackOverflow
 """
+
+# TODO: add some functionality to check the number of differences between the
+#  input directory and an output directory that has previously between copied
+#  over (could make updating easier)?
+
+
+OUTPUT_DIR_NAME = 'readonly'
 
 
 def get_inputted_repo_paths():
@@ -120,19 +126,31 @@ def check_small_dir(dir_path, max_gigabytes=0.001):
 
 
 def copy_directory(input_dir_path, output_repo_path):
-    """Copy a directory to another directory
+    """Copy a directory to within a directory called {OUTPUT_DIR_NAME} within
+    another repo
 
     :param input_dir_path: (Path) directory to copy
-    :param output_repo_path: (Path) destination directory for copied directory
+    :param output_repo_path: (Path) destination repo for copied directory
     :return output_dir_path: (Path) copied directory
     """
-    logging.info("copying src directory of input repo to root of output repo")
-    subprocess.run(
-        ["cp", "-R", f"{str(input_dir_path)}", f"{str(output_repo_path)}"])
+    output_dir_path = output_repo_path / Path(OUTPUT_DIR_NAME)
+    logging.info(f"making output directory if it does not already exist "
+                 f"({output_dir_path})")
+    output_dir_path.mkdir(exist_ok=True)
 
-    output_dir_path = output_repo_path / input_dir_path.name
+    logging.info(f"copying src directory of input repo to output repo (within "
+                 f"{OUTPUT_DIR_NAME} directory)")
+    subprocess.run(
+        ["cp", "-R", f"{str(input_dir_path)}", f"{str(output_dir_path)}"])
+
+    output_dir_path = output_dir_path / input_dir_path.name
     logging.info(f"finished copying directory from {str(input_dir_path)} to "
                  f"{str(output_dir_path)}")
+    logging.info(
+        "!!note: please look at adding to the original (input) repo if "
+        "needed (via an approved pull request), not the new copied directory, "
+        "which should almost always be considered read-only (just like an "
+        "external package)!!")
     return output_dir_path
 
 
@@ -143,7 +161,6 @@ def set_directory_to_read_only(dir_path):
     """
     logging.info(f"setting directory to read-only permission ({dir_path})")
     dir_path.chmod(stat.S_IREAD)
-    # TODO: is this really wanted?
 
 
 if __name__ == '__main__':
@@ -154,4 +171,4 @@ if __name__ == '__main__':
     check_small_dir(dir_path=input_dir_path)
     output_dir_path = copy_directory(
         input_dir_path=input_dir_path, output_repo_path=output_repo_path)
-    set_directory_to_read_only(dir_path=output_dir_path)
+    # set_directory_to_read_only(dir_path=output_dir_path)

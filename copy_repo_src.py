@@ -147,7 +147,7 @@ def copy_directory(input_dir_path, output_repo_path):
         "READ-ONLY (just like an external package), such that any additions/"
         "edits to the copied funcationality should be made on the original "
         "(input) repo, not the copied code. This is because the idea is for "
-        "development of the input repo to also be avaiable to other repos "
+        "development of the input repo to also be available to other repos "
         "too.!!")
     return output_dir_path
 

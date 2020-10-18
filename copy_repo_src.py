@@ -59,6 +59,9 @@ credentials-in-pip-conf-for-private-pypi
 #  input directory and an output directory that has previously between copied
 #  over (could make updating easier)?
 
+# TODO: add the running of unit tests in the input repo?
+# TODO: detect whether in a virtual env, and if so pip install new reqs?
+
 
 def get_inputted_repo_paths():
     """Get path to the "input repo" and that to the "output repo" from the

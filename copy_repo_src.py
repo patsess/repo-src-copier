@@ -33,6 +33,7 @@ repo.
 seen as read-only. (This is because the idea is for development of the input 
 repo to be done on that repo directly so that it can then be used by other 
 repos too.)
+- Adds any missing requirements from the input repo to the output repo.
 
 For simplicity, this script should only use the Python standard library 
 (assuming Python 3.7 or later).
@@ -161,6 +162,49 @@ def set_directory_to_read_only(dir_path):
     dir_path.chmod(stat.S_IREAD)
 
 
+def add_input_repo_requirements(input_repo_path, output_repo_path):
+    """Add any missing requirements from the input repo to the output repo
+
+    :param input_repo_path: (Path) repo from which directory was copied
+    :param output_repo_path: (Path) destination repo for copied directory
+    """
+    input_req_file_path = input_repo_path / Path('requirements.txt')
+    if not input_req_file_path.is_file():
+        logging.info("no requirements file found in input repo")
+        return None
+
+    with open(input_req_file_path) as f: 
+        input_reqs = f.readlines()
+    
+    output_req_file_path = output_repo_path / Path('requirements.txt')
+    if output_req_file_path.is_file():
+        with open(output_req_file_path) as f: 
+            output_reqs = f.readlines()
+    else:
+        logging.info(f"making requirements.txt file output repo")
+        output_req_file_path.touch()
+        output_reqs = []
+
+    _get_pkg_name_fn = (
+        lambda x: x.replace('>', '=').replace('<', '=').split('=')[0].strip())
+    input_package_names = [_get_pkg_name_fn(r) for r in input_reqs]
+    output_package_names = [_get_pkg_name_fn(r) for r in output_reqs]
+
+    wanted_input_reqs = [r for r, p in zip(input_reqs, input_package_names) 
+                         if p not in output_package_names]
+    if len(wanted_input_reqs) == 0:
+        logging.info("no requirements found to add to output repo")
+        return None
+
+    output_reqs = wanted_input_reqs + output_reqs
+
+    wanted_package_names = [_get_pkg_name_fn(r) for r in wanted_input_reqs]
+    logging.info(f"adding requirements to output repo: {wanted_package_names}")
+    os.remove(output_req_file_path)    
+    with open(output_req_file_path, 'w') as f:
+        f.writelines(output_reqs)
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     input_repo_path, output_repo_path = get_inputted_repo_paths()
@@ -170,3 +214,5 @@ if __name__ == '__main__':
     output_dir_path = copy_directory(
         input_dir_path=input_dir_path, output_repo_path=output_repo_path)
     # set_directory_to_read_only(dir_path=output_dir_path)
+    add_input_repo_requirements(
+        input_repo_path=input_repo_path, output_repo_path=output_repo_path)

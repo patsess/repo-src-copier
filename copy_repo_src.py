@@ -48,7 +48,10 @@ output repo, or to the need to keep multiple versions of the input repo and
 specify which is wanted for the output repo.
 
 Some useful discussions:
-TODO: add some useful discussion links from (e.g.) StackOverflow
+- https://stackoverflow.com/questions/55929417/
+how-to-securely-git-clone-pip-install-a-private-repository-into-my-docker-image
+- https://stackoverflow.com/questions/50468951/
+credentials-in-pip-conf-for-private-pypi
 """
 
 # TODO: add some functionality to check the number of differences between the

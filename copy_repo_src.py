@@ -55,12 +55,16 @@ how-to-securely-git-clone-pip-install-a-private-repository-into-my-docker-image
 credentials-in-pip-conf-for-private-pypi
 """
 
+# TODO: when detecting the src directory of the input repo, ignore any 
+#  directory called 'tests'
+
 # TODO: add some functionality to check the number of differences between the
 #  input directory and an output directory that has previously between copied
 #  over (could make updating easier)?
 
 # TODO: add the running of unit tests in the input repo?
-# TODO: detect whether in a virtual env, and if so pip install new reqs?
+# TODO: detect whether in a virtual env, and if so pip install new reqs and 
+#  re-write the requiremetns file usig pip freeze?
 
 
 def get_inputted_repo_paths():

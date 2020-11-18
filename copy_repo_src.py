@@ -4,7 +4,6 @@ import argparse
 import os
 from pathlib import Path
 import subprocess
-import stat
 
 __author__ = 'psessford'
 
@@ -55,16 +54,11 @@ how-to-securely-git-clone-pip-install-a-private-repository-into-my-docker-image
 credentials-in-pip-conf-for-private-pypi
 """
 
-# TODO: when detecting the src directory of the input repo, ignore any 
-#  directory called 'tests'
-
 # TODO: add some functionality to check the number of differences between the
 #  input directory and an output directory that has previously between copied
 #  over (could make updating easier)?
 
 # TODO: add the running of unit tests in the input repo?
-# TODO: detect whether in a virtual env, and if so pip install new reqs and 
-#  re-write the requiremetns file usig pip freeze?
 
 
 def get_inputted_repo_paths():
@@ -108,6 +102,8 @@ def get_single_public_directory(dir_path):
     private_dirs = [p for p in dir_path.glob('./_*') if p.is_dir()]
     public_dirs = [p for p in dir_path.glob('./*')
                    if (p.is_dir() and p not in hidden_dirs + private_dirs)]
+
+    public_dirs = [p for p in public_dirs if p.name != 'tests']
 
     if len(public_dirs) != 1:
         raise ValueError(f"single public directory not found "
@@ -160,13 +156,13 @@ def copy_directory(input_dir_path, output_repo_path):
     return output_dir_path
 
 
-def set_directory_to_read_only(dir_path):
-    """Set the permissions of a directory to read-only
-
-    :param dir_path: (Path)
-    """
-    logging.info(f"setting directory to read-only permission ({dir_path})")
-    dir_path.chmod(stat.S_IREAD)
+# def set_directory_to_read_only(dir_path):
+#     """Set the permissions of a directory to read-only
+#
+#     :param dir_path: (Path)
+#     """
+#     logging.info(f"setting directory to read-only permission ({dir_path})")
+#     dir_path.chmod(stat.S_IREAD)
 
 
 def add_input_repo_requirements(input_repo_path, output_repo_path):
@@ -204,6 +200,7 @@ def add_input_repo_requirements(input_repo_path, output_repo_path):
         return None
 
     output_reqs = wanted_input_reqs + output_reqs
+    output_reqs.sort()
 
     wanted_package_names = [_get_pkg_name_fn(r) for r in wanted_input_reqs]
     logging.info(f"adding requirements to output repo: {wanted_package_names}")
